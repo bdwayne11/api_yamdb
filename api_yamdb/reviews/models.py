@@ -1,70 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from .validators import validate_year
 
-ROLE_CHOICES = [
-    ('user', 'user'),
-    ('admin', 'admin'),
-    ('moderator', 'moderator')
-]
-
-
-class User(AbstractUser):
-    username = models.CharField(
-        max_length=120,
-        unique=True,
-        blank=False,
-        null=False,
-    )
-    password = models.CharField(
-        max_length=100,
-        blank=False,
-        null=False,
-    )
-    email = models.EmailField(
-        max_length=50,
-        unique=True,
-        blank=False,
-        null=False
-    )
-    role = models.CharField(
-        'Роль',
-        max_length=25,
-        choices=ROLE_CHOICES,
-        default='user',
-        blank=True,
-    )
-    first_name = models.CharField(
-        'Имя',
-        max_length=50,
-        blank=True,
-    )
-    last_name = models.CharField(
-        'Фамилия',
-        max_length=70,
-        blank=True,
-    )
-    biography = models.TextField(
-        'Биография',
-        blank=True,
-    )
-    confirmation_code = models.CharField(
-        'код подтверждения',
-        max_length=255,
-        null=True,
-        blank=False,
-        default='****',
-    )
-
-    class Meta:
-        ordering = ['id']
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
-
-    def __str__(self):
-        return self.username
+User = get_user_model()
 
 
 class Genre(models.Model):
@@ -117,7 +57,7 @@ class Title(models.Model):
         related_name='titles'
     )
     description = models.TextField(null=True, verbose_name='Описание')
-    year = models.TimeField(
+    year = models.IntegerField(
         'Год выпуска',
         help_text='Введите год релиза',
         validators=(validate_year,)
