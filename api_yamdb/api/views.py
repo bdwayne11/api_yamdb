@@ -1,6 +1,6 @@
 from rest_framework import viewsets, mixins
 from rest_framework.pagination import LimitOffsetPagination
-from django.shortcuts import get_object_or_404
+from rest_framework import filters
 
 from .permissions import OnlySafeMethodsOrStaff
 from .serializers import (GenreSerializer, CategorySerializer,
@@ -21,14 +21,20 @@ class GenreViewSet(GetListDestroyCreate):
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
     pagination_class = LimitOffsetPagination
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
     permission_classes = (OnlySafeMethodsOrStaff,)
+    lookup_field = 'slug'
 
 
 class CategoryViewSet(GetListDestroyCreate):
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
     pagination_class = LimitOffsetPagination
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
     permission_classes = (OnlySafeMethodsOrStaff,)
+    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -42,5 +48,5 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    serializer_class = ReviewSerializer
+    serializer_class = CommentSerializer
     queryset = Comment.objects.all()
