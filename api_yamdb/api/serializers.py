@@ -1,5 +1,6 @@
 from django.db.models import Avg
 from rest_framework import serializers
+from rest_framework.fields import CurrentUserDefault
 from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import (Genre, Category, Title,
@@ -14,12 +15,30 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Category
         fields = ('name', 'slug')
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitlePostSerializer(serializers.ModelSerializer):
+    description = serializers.CharField(required=False)
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Genre.objects.all(),
+        many=True
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all(),
+    )
+
+    class Meta:
+        model = Title
+        fields = ('name', 'year', 'description', 'genre', 'category')
+
+
+class TitleGetSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
@@ -37,13 +56,19 @@ class TitleSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         slug_field='username',
-        read_only=True
+        read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
+    title = serializers.SlugRelatedField(
+        slug_field='id',
+        read_only=True,
+        default=serializers.CurrentUserDefault()
     )
     score = serializers.CharField(source='rating')
 
     class Meta:
         model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        fields = '__all__'
         validators = [
             UniqueTogetherValidator(
                 queryset=Review.objects.all(),
@@ -52,15 +77,13 @@ class ReviewSerializer(serializers.ModelSerializer):
             )
         ]
 
-    def perform_create(self, serializer):
-        return serializer.save(author=self.request.user)
-
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True
     )
+
     class Meta:
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date',)
