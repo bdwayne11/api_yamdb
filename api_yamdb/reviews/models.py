@@ -26,12 +26,12 @@ class Genre(models.Model):
 class Category(models.Model):
     name = models.CharField(
         'Название категории',
-        max_length=120,
+        max_length=256,
         blank=False,
         null=False,
     )
     slug = models.SlugField(
-        max_length=100,
+        max_length=50,
         unique=True
     )
 

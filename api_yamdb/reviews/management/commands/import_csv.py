@@ -7,7 +7,7 @@ from reviews.models import (Category, Comment, Genre, GenreTitle,
 
 
 class Command(BaseCommand):
-    help = "Loads data from children.csv"
+    help = "Loads data from csv"
 
     def handle(self, *args, **options):
         if User.objects.exists():
