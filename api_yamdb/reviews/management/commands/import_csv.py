@@ -17,14 +17,14 @@ class Command(BaseCommand):
 
         users = [
             User(
-                id=row.get('id'),
-                username=row.get('username'),
-                email=row.get('email'),
-                is_moderator=row.get('role') == 'moderator',
-                is_staff=row.get('role') == 'admin',
-                first_name=row.get('first_name'),
-                last_name=row.get('last_name'),
-                bio=row.get('bio'),
+                id=row['id'],
+                username=row['username'],
+                email=row['email'],
+                is_moderator=row['role'] == 'moderator',
+                is_staff=row['role'] == 'admin',
+                first_name=row['first_name'],
+                last_name=row['last_name'],
+                bio=row['bio']
             ) for _, row in users_data.iterrows()
         ]
 
@@ -38,9 +38,9 @@ class Command(BaseCommand):
 
         genres = [
             Genre(
-                id=row.get('id'),
-                name=row.get('name'),
-                slug=row.get('slug')
+                id=row['id'],
+                name=row['name'],
+                slug=row['slug'],
             ) for _, row in genre_data.iterrows()
         ]
 
@@ -54,9 +54,9 @@ class Command(BaseCommand):
 
         categories = [
             Category(
-                id=row.get('id'),
-                name=row.get('name'),
-                slug=row.get('slug')
+                id=row['id'],
+                name=row['name'],
+                slug=row['slug']
             ) for _, row in category_data.iterrows()
         ]
 
@@ -71,10 +71,10 @@ class Command(BaseCommand):
 
         titles = [
             Title(
-                id=row.get('id'),
-                name=row.get('name'),
-                year=row.get('year'),
-                category=Category.objects.get(id=row.get('category'))
+                id=row['id'],
+                name=row['name'],
+                year=row['year'],
+                category=Category.objects.get(id=row['category'])
             ) for _, row in title_data.iterrows()
         ]
 
@@ -90,9 +90,9 @@ class Command(BaseCommand):
 
         genretitles = [
             GenreTitle(
-                id=row.get('id'),
-                title=Title.objects.get(id=row.get('title_id')),
-                genre=Genre.objects.get(id=row.get('genre_id'))
+                id=row['id'],
+                title=Title.objects.get(id=row['title_id']),
+                genre=Genre.objects.get(id=row['genre_id'])
             ) for _, row in genretitle_data.iterrows()
         ]
 
@@ -107,12 +107,12 @@ class Command(BaseCommand):
 
         reviews = [
             Review(
-                id=row.get('id'),
-                title=Title.objects.get(pk=row.get('title_id')),
-                text=row.get('text'),
-                author=User.objects.get(id=row.get('author')),
-                rating=row.get('score'),
-                pub_date=row.get('pub_date'),
+                id=row['id'],
+                title=Title.objects.get(pk=row['title_id']),
+                text=row['text'],
+                author=User.objects.get(id=row['author']),
+                rating=row['score'],
+                pub_date=row['pub_date'],
             ) for _, row in review_data.iterrows()
         ]
 
@@ -127,11 +127,11 @@ class Command(BaseCommand):
 
         comments = [
             Comment(
-                id=row.get('id'),
-                review=Review.objects.get(id=row.get('review_id')),
-                text=row.get('text'),
-                author=User.objects.get(id=row.get('author')),
-                pub_date=row.get('pub_date')
+                id=row['id'],
+                review=Review.objects.get(id=row['review_id']),
+                text=row['text'],
+                author=User.objects.get(id=row['author']),
+                pub_date=row['pub_date']
             ) for _, row in comment_data.iterrows()
         ]
 
