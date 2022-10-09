@@ -70,7 +70,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    pagination_class = (AdminModerAuthor,)
+    permission_classes = (AdminModerAuthor,)
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')

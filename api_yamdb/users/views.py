@@ -11,12 +11,13 @@ from rest_framework import status, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserAdminSerializer
-    # permission_classes = (IsAdmin, IsAuthenticated, )
+    permission_classes = (IsAdmin,)
     lookup_field = 'username'
     filter_backends = (SearchFilter,)
     search_fields = ('username',)
@@ -24,7 +25,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         methods=['GET', 'PATCH'],
         detail=False,
-        # permission_classes = ()
+        permission_classes=[IsAuthenticated],
         url_path='me'
     )
     def me(self, request):
@@ -46,8 +47,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 
