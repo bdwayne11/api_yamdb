@@ -77,7 +77,7 @@ def token(request):
     serializer = TokenSerializer(data=request.data)
     if serializer.is_valid():
         user = get_object_or_404(
-            User, 
+            User,
             username=serializer.validated_data["username"]
         )
         if user.check_password(serializer.validated_data["confirmation_code"]):
@@ -90,5 +90,6 @@ def token(request):
             {"message": "Ошибка доступа"},
             status=status.HTTP_400_BAD_REQUEST
         )
-    return Response({'message': 'Ошибка в данных', 'errors': serializer.errors},
+    return Response({'message': 'Ошибка в данных',
+                     'errors': serializer.errors},
                     status=status.HTTP_400_BAD_REQUEST)

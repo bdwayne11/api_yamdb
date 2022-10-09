@@ -1,10 +1,8 @@
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .filters import TitleFilter
 from .permissions import (OnlySafeMethodsOrStaff, IsAdminOrUserReadOnly,
@@ -13,7 +11,7 @@ from .serializers import (GenreSerializer, CategorySerializer,
                           TitleGetSerializer, ReviewSerializer,
                           CommentSerializer, TitlePostSerializer)
 from reviews.models import (Genre, Category, Title,
-                                      Review, Comment)
+                            Review)
 
 
 class GetListDestroyCreate(mixins.ListModelMixin,
@@ -45,6 +43,7 @@ class CategoryViewSet(GetListDestroyCreate):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
+    pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminOrUserReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -70,14 +69,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
         title = get_object_or_404(Title, id=title_id)
         serializer.save(author=self.request.user, title=title)
 
-    # def get_permissions(self):
-    #     if self.request.method == 'GET':
-    #         self.permission_classes == (AllowAny,)
-    #     elif self.request.method == 'POST':
-    #         self.permission_classes == (IsAuthenticated,)
-    #     else:
-    #         self.permission_classes == (AdminModerAuthor,)
-
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
@@ -86,17 +77,9 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
-        return review.comments.all()
+        return review.comments.all().order_by('pub_date')
 
     def perform_create(self, serializer):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user, review=review)
-
-    # def get_permissions(self):
-    #     if self.request.method == 'GET':
-    #         self.permission_classes == (AllowAny,)
-    #     elif self.request.method == 'POST':
-    #         self.permission_classes == (IsAuthenticated,)
-    #     else:
-    #         self.permission_classes == (AdminModerAuthor,)

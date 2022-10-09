@@ -22,10 +22,10 @@ class UserNotAdminSerializer(serializers.ModelSerializer):
 
 class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField(
-        max_length=254, 
+        max_length=254,
         validators=[UniqueValidator(queryset=User.objects.all())])
     username = serializers.CharField(
-        max_length=150, 
+        max_length=150,
         validators=[UniqueValidator(queryset=User.objects.all())])
 
     def validate(self, data):

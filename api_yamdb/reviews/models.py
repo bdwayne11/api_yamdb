@@ -96,7 +96,7 @@ class Review(models.Model):
         db_index=True,
     )
     text = models.TextField()
-    rating = models.IntegerField(
+    score = models.IntegerField(
         'Рейтинг',
         default=0,
         validators=[
