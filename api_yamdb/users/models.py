@@ -1,16 +1,42 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+USER = 'user'
+ADMIN = 'admin'
+MODERATOR = 'moderator'
+
+ROLE_CHOICES = [
+    (USER, 'user'),
+    (ADMIN, 'admin'),
+    (MODERATOR, 'moderator')
+]
+
 
 class User(AbstractUser):
-    is_moderator = models.BooleanField(
-        verbose_name='Статус модератора',
-        default=False
+    email = models. EmailField(
+        max_length=150,
+        unique=True,
+        blank=False,
+        null=False
     )
     bio = models.TextField(
         verbose_name='Биография',
         blank=True,
     )
+    role = models.CharField(choices=ROLE_CHOICES, max_length=20,
+                            default=USER, blank=True)
+
+    @property
+    def is_user(self):
+        return self.role == USER
+
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == ADMIN
 
     class Meta:
         ordering = ['id']
