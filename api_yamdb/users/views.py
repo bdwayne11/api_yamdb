@@ -51,6 +51,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def signup(request):
@@ -92,4 +93,5 @@ def token(request):
         )
     return Response({'message': 'Ошибка в данных',
                      'errors': serializer.errors},
+
                     status=status.HTTP_400_BAD_REQUEST)
