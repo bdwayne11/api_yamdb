@@ -1,11 +1,35 @@
-from .serializers import SignupSerializer, TokenSerializer
+from rest_framework.filters import SearchFilter
+from .serializers import (SignupSerializer, TokenSerializer,
+                          UserSerializer)
+from .permissions import IsAdmin
 from .models import User
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.decorators import action
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    # permission_classes = (IsAdmin,)
+    lookup_field = 'username'
+    filter_backends = (SearchFilter,)
+    search_fields = ('username',)
+
+    @action(
+        methods=['GET', 'PATCH'],
+        detail=False,
+        # permission_classes = ()
+        url_path='me'
+    )
+    def me(self, request):
+        serializer = UserSerializer(request.user)
+        pass
+
 
 @api_view(['POST'])
 def signup(request):
@@ -13,13 +37,13 @@ def signup(request):
     serializer = SignupSerializer(
         data=request.data, context={'password': password})
     if serializer.is_valid():
-        new_user=serializer.save()
+        new_user = serializer.save()
         send_mail(
             'Регистрация на сервисе api_yamdb',
             'Поздравляем с регистрацией!'
             f'Ваш код подтверждения: {password}',
             'auth@yamdb.com',
-            [new_user.email,],
+            [new_user.email, ],
             fail_silently=False,
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
