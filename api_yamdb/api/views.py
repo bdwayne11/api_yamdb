@@ -5,7 +5,8 @@ from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .filters import TitleFilter
-from .permissions import OnlySafeMethodsOrStaff
+from .permissions import (OnlySafeMethodsOrStaff, IsAdminOrUserReadOnly,
+                          AdminModerAuthor)
 from .serializers import (GenreSerializer, CategorySerializer,
                           TitleGetSerializer, ReviewSerializer,
                           CommentSerializer, TitlePostSerializer)
@@ -42,6 +43,7 @@ class CategoryViewSet(GetListDestroyCreate):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
+    permission_classes = (IsAdminOrUserReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
@@ -53,6 +55,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
+    permission_classes = (IsAdminOrUserReadOnly,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -67,6 +70,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
+    pagination_class = (AdminModerAuthor,)
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')

@@ -1,11 +1,13 @@
 from rest_framework.filters import SearchFilter
 from .serializers import (SignupSerializer, TokenSerializer,
-                          UserSerializer)
+                          UserAdminSerializer,
+                          UserNotAdminSerializer)
 from .permissions import IsAdmin
 from .models import User
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework_simplejwt.tokens import AccessToken
@@ -14,8 +16,8 @@ from rest_framework.decorators import action
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
-    # permission_classes = (IsAdmin,)
+    serializer_class = UserAdminSerializer
+    # permission_classes = (IsAdmin, IsAuthenticated, )
     lookup_field = 'username'
     filter_backends = (SearchFilter,)
     search_fields = ('username',)
@@ -27,8 +29,26 @@ class UserViewSet(viewsets.ModelViewSet):
         url_path='me'
     )
     def me(self, request):
-        serializer = UserSerializer(request.user)
-        pass
+        serializer = UserAdminSerializer(request.user)
+        if request.method == 'PATCH':
+
+            if request.user.is_admin:
+                serializer = UserAdminSerializer(
+                    request.user,
+                    data=request.data,
+                    partial=True
+                )
+            else:
+                serializer = UserNotAdminSerializer(
+                    request.user,
+                    data=request.data,
+                    partial=True
+                )
+
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data)
 
 
 @api_view(['POST'])
