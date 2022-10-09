@@ -1,7 +1,7 @@
 from django.db.models import Avg
 from rest_framework import serializers
-from rest_framework.fields import CurrentUserDefault
-from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.exceptions import ValidationError
+
 
 from reviews.models import (Genre, Category, Title,
                             Review, Comment)
@@ -35,22 +35,24 @@ class TitlePostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('name', 'year', 'description', 'genre', 'category')
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
 
 
 class TitleGetSerializer(serializers.ModelSerializer):
-    rating = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField("get_rating")
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating', 'description', 'genre', 'category',)
+        fields = ('id', 'name', 'year', 'rating',
+                  'description', 'genre', 'category',)
 
-    def get_rating(self, obj):
-        reviews = Review.objects.filter(title_id=obj)
-        result = reviews.all().aggregate(Avg('rating'))
-        return float("{0:.2f}".format(result['rating__avg']))
+    def get_rating(self, title):
+        reviews = Review.objects.filter(title=title)
+        rating = reviews.all().aggregate(Avg("score"))
+        result = rating["score__avg"]
+        return result
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -64,18 +66,20 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True,
         default=serializers.CurrentUserDefault()
     )
-    score = serializers.CharField(source='rating')
+
+    def validate(self, data):
+        title = self.context["view"].kwargs["title_id"]
+        author = self.context["request"].user
+        is_exists = Review.objects.filter(title=title, author=author)
+        if self.context["request"].method != "PATCH":
+            if is_exists:
+                raise ValidationError(
+                    "Вы уже оставляли ревью к этому произведению")
+        return data
 
     class Meta:
         model = Review
-        fields = '__all__'
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=('author', 'title'),
-                message='Вы уже оставляли свой отзыв к данному произведению!'
-            )
-        ]
+        fields = "__all__"
 
 
 class CommentSerializer(serializers.ModelSerializer):

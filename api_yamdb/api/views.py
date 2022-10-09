@@ -5,12 +5,13 @@ from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .filters import TitleFilter
-from .permissions import OnlySafeMethodsOrStaff
+from .permissions import (OnlySafeMethodsOrStaff, IsAdminOrUserReadOnly,
+                          AdminModerAuthor)
 from .serializers import (GenreSerializer, CategorySerializer,
                           TitleGetSerializer, ReviewSerializer,
                           CommentSerializer, TitlePostSerializer)
 from reviews.models import (Genre, Category, Title,
-                                      Review, Comment)
+                            Review)
 
 
 class GetListDestroyCreate(mixins.ListModelMixin,
@@ -42,8 +43,11 @@ class CategoryViewSet(GetListDestroyCreate):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
+    pagination_class = LimitOffsetPagination
+    permission_classes = (IsAdminOrUserReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+    http_method_names = ["get", "post", "head", "patch", "delete"]
 
     def get_serializer_class(self):
         if self.request.method not in ('POST', 'PATCH'):
@@ -53,6 +57,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
+    permission_classes = (AdminModerAuthor,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -67,11 +72,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
+    permission_classes = (AdminModerAuthor,)
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
-        return review.comments.all()
+        return review.comments.all().order_by('pub_date')
 
     def perform_create(self, serializer):
         review_id = self.kwargs.get('review_id')

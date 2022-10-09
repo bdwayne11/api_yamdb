@@ -4,12 +4,28 @@ from rest_framework.validators import UniqueValidator
 from .models import User
 
 
+class UserAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')
+
+
+class UserNotAdminSerializer(serializers.ModelSerializer):
+    role = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')
+
+
 class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField(
-        max_length=254, 
+        max_length=254,
         validators=[UniqueValidator(queryset=User.objects.all())])
     username = serializers.CharField(
-        max_length=150, 
+        max_length=150,
         validators=[UniqueValidator(queryset=User.objects.all())])
 
     def validate(self, data):

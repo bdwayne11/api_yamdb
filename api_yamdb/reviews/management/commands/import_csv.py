@@ -119,7 +119,7 @@ class Command(BaseCommand):
         Review.objects.bulk_create(reviews)
         print('Успешная загрузка в БД Review :)\n')
 
-        #Модель Comments
+        # Модель Comments
         if Comment.objects.exists():
             Comment.objects.all().delete()
 
