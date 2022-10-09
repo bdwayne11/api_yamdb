@@ -1,8 +1,10 @@
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .filters import TitleFilter
 from .permissions import (OnlySafeMethodsOrStaff, IsAdminOrUserReadOnly,
@@ -46,6 +48,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrUserReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+    http_method_names = ["get", "post", "head", "patch", "delete"]
 
     def get_serializer_class(self):
         if self.request.method not in ('POST', 'PATCH'):
@@ -55,7 +58,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAdminOrUserReadOnly,)
+    permission_classes = (AdminModerAuthor,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -67,10 +70,18 @@ class ReviewViewSet(viewsets.ModelViewSet):
         title = get_object_or_404(Title, id=title_id)
         serializer.save(author=self.request.user, title=title)
 
+    # def get_permissions(self):
+    #     if self.request.method == 'GET':
+    #         self.permission_classes == (AllowAny,)
+    #     elif self.request.method == 'POST':
+    #         self.permission_classes == (IsAuthenticated,)
+    #     else:
+    #         self.permission_classes == (AdminModerAuthor,)
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    pagination_class = (AdminModerAuthor,)
+    permission_classes = (AdminModerAuthor,)
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
@@ -81,3 +92,11 @@ class CommentViewSet(viewsets.ModelViewSet):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user, review=review)
+
+    # def get_permissions(self):
+    #     if self.request.method == 'GET':
+    #         self.permission_classes == (AllowAny,)
+    #     elif self.request.method == 'POST':
+    #         self.permission_classes == (IsAuthenticated,)
+    #     else:
+    #         self.permission_classes == (AdminModerAuthor,)

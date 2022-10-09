@@ -35,7 +35,7 @@ class TitlePostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('name', 'year', 'description', 'genre', 'category')
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
 
 
 class TitleGetSerializer(serializers.ModelSerializer):
@@ -50,7 +50,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
     def get_rating(self, obj):
         reviews = Review.objects.filter(title_id=obj)
         result = reviews.all().aggregate(Avg('rating'))
-        return float("{0:.2f}".format(result['rating__avg']))
+        return str("{0:.2f}".format(result['rating__avg']))
 
 
 class ReviewSerializer(serializers.ModelSerializer):
