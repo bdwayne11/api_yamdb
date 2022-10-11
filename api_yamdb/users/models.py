@@ -16,8 +16,6 @@ class User(AbstractUser):
     email = models. EmailField(
         max_length=150,
         unique=True,
-        blank=False,
-        null=False
     )
     bio = models.TextField(
         verbose_name='Биография',
@@ -36,7 +34,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == ADMIN
+        return self.is_staff or self.role == ADMIN
 
     class Meta:
         ordering = ['id']

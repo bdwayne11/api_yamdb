@@ -2,10 +2,7 @@ from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-
-from reviews.models import (Genre, Category, Title,
-                            Review, Comment)
-
+from reviews.models import Category, Comment, Genre, Review, Title
 
 class GenreSerializer(serializers.ModelSerializer):
 
@@ -39,7 +36,7 @@ class TitlePostSerializer(serializers.ModelSerializer):
 
 
 class TitleGetSerializer(serializers.ModelSerializer):
-    rating = serializers.SerializerMethodField("get_rating")
+    rating = serializers.IntegerField(read_only=True)
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
 
@@ -48,11 +45,11 @@ class TitleGetSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'year', 'rating',
                   'description', 'genre', 'category',)
 
-    def get_rating(self, title):
-        reviews = Review.objects.filter(title=title)
-        rating = reviews.all().aggregate(Avg("score"))
-        result = rating["score__avg"]
-        return result
+    # def get_rating(self, title):
+    #     reviews = Review.objects.filter(title=title)
+    #     rating = reviews.all().aggregate(Avg("score"))
+    #     result = rating["score__avg"]
+    #     return result
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -68,18 +65,18 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
 
     def validate(self, data):
-        title = self.context["view"].kwargs["title_id"]
-        author = self.context["request"].user
+        title = self.context['view'].kwargs['title_id']
+        author = self.context['request'].user
         is_exists = Review.objects.filter(title=title, author=author)
-        if self.context["request"].method != "PATCH":
+        if self.context['request'].method != 'PATCH':
             if is_exists:
                 raise ValidationError(
-                    "Вы уже оставляли ревью к этому произведению")
+                    'Вы уже оставляли ревью к этому произведению')
         return data
 
     class Meta:
         model = Review
-        fields = "__all__"
+        fields = '__all__'
 
 
 class CommentSerializer(serializers.ModelSerializer):

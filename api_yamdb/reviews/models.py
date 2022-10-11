@@ -1,6 +1,6 @@
-from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
 from .validators import validate_year
 
@@ -10,14 +10,18 @@ User = get_user_model()
 class Genre(models.Model):
     name = models.CharField(
         'Жанр',
-        max_length=120,
+        max_length=256,
         blank=False,
         null=False,
     )
     slug = models.SlugField(
-        max_length=100,
+        max_length=50,
         unique=True
     )
+
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
     def __str__(self):
         return self.name
@@ -35,6 +39,10 @@ class Category(models.Model):
         unique=True
     )
 
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
     def __str__(self):
         return self.name
 
@@ -42,7 +50,7 @@ class Category(models.Model):
 class Title(models.Model):
     name = models.CharField(
         'Название произведения',
-        max_length=120,
+        max_length=256,
         blank=False,
         null=False,
     )
@@ -106,6 +114,8 @@ class Review(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
         ordering = ['pub_date']
         constraints = [
             models.UniqueConstraint(
@@ -131,6 +141,10 @@ class Comment(models.Model):
         db_index=True
     )
     text = models.TextField()
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
 
     def __str__(self):
         return self.text[:20]

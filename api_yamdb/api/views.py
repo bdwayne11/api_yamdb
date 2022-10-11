@@ -1,17 +1,17 @@
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, mixins
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, mixins, viewsets
+from rest_framework.pagination import LimitOffsetPagination
+
+from reviews.models import Category, Genre, Review, Title
 
 from .filters import TitleFilter
-from .permissions import (OnlySafeMethodsOrStaff, IsAdminOrUserReadOnly,
-                          AdminModerAuthor)
-from .serializers import (GenreSerializer, CategorySerializer,
-                          TitleGetSerializer, ReviewSerializer,
-                          CommentSerializer, TitlePostSerializer)
-from reviews.models import (Genre, Category, Title,
-                            Review)
+from .permissions import (AdminModerAuthor, IsAdminOrUserReadOnly,
+                          OnlySafeMethodsOrStaff)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, ReviewSerializer,
+                          TitleGetSerializer, TitlePostSerializer)
 
 
 class GetListDestroyCreate(mixins.ListModelMixin,
@@ -42,12 +42,13 @@ class CategoryViewSet(GetListDestroyCreate):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    ).all()
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminOrUserReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
-    http_method_names = ["get", "post", "head", "patch", "delete"]
 
     def get_serializer_class(self):
         if self.request.method not in ('POST', 'PATCH'):
