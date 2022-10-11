@@ -53,43 +53,45 @@ class UserViewSet(viewsets.ModelViewSet):
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def signup(request):
+    serializer = SignupSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
     password = User.objects.make_random_password()
-    serializer = SignupSerializer(
-        data=request.data, context={'password': password})
-    if serializer.is_valid():
-        new_user = serializer.save()
-        send_mail(
-            'Регистрация на сервисе api_yamdb',
-            'Поздравляем с регистрацией!'
-            f'Ваш код подтверждения: {password}',
-            'auth@yamdb.com',
-            [new_user.email, ],
-            fail_silently=False,
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
+    try:
+        user, _ = User.objects.get_or_create(
+            username=serializer.data['username'],
+            email=serializer.data['email'])
+        user.set_password(password)
+    except:
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+    
+    send_mail(
+        'Регистрация на сервисе api_yamdb',
+        'Поздравляем с регистрацией!'
+        f'Ваш код подтверждения: {password}',
+        'auth@yamdb.com',
+        [user.email, ],
+        fail_silently=False,
+    )
+    return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def token(request):
     serializer = TokenSerializer(data=request.data)
-    if serializer.is_valid():
-        user = get_object_or_404(
-            User,
-            username=serializer.validated_data["username"]
-        )
-        if user.check_password(serializer.validated_data["confirmation_code"]):
-            token = AccessToken.for_user(user)
-            return Response(
-                {"token": f"{token}"},
-                status=status.HTTP_200_OK
-            )
+    serializer.is_valid(raise_exception=True)
+    user = get_object_or_404(
+        User,
+        username=serializer.validated_data["username"]
+    )
+    if user.check_password(serializer.validated_data["confirmation_code"]):
+        token = AccessToken.for_user(user)
         return Response(
-            {"message": "Ошибка доступа"},
-            status=status.HTTP_400_BAD_REQUEST
+            {"token": f"{token}"},
+            status=status.HTTP_200_OK
         )
-    return Response({'message': 'Ошибка в данных',
-                     'errors': serializer.errors},
-
-                    status=status.HTTP_400_BAD_REQUEST)
+    return Response(
+        {"message": "Ошибка доступа"},
+        status=status.HTTP_400_BAD_REQUEST
+    )
