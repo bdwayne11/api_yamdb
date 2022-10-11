@@ -22,23 +22,15 @@ class UserNotAdminSerializer(serializers.ModelSerializer):
 
 class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField(
-        max_length=254,
-        validators=[UniqueValidator(queryset=User.objects.all())])
+        max_length=254)
     username = serializers.CharField(
-        max_length=150,
-        validators=[UniqueValidator(queryset=User.objects.all())])
+        max_length=150)
 
     def validate(self, data):
         if data['username'] == 'me':
             raise serializers.ValidationError(
                 "Использовать имя 'me' в качестве username запрещено")
         return data
-
-    def create(self, validated_data):
-        new_user = User.objects.create_user(
-            **validated_data,
-            password=self.context.get('password'))
-        return new_user
 
 
 class TokenSerializer(serializers.Serializer):
