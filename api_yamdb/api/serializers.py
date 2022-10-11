@@ -1,8 +1,8 @@
-from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from reviews.models import Category, Comment, Genre, Review, Title
+
 
 class GenreSerializer(serializers.ModelSerializer):
 
@@ -44,12 +44,6 @@ class TitleGetSerializer(serializers.ModelSerializer):
         model = Title
         fields = ('id', 'name', 'year', 'rating',
                   'description', 'genre', 'category',)
-
-    # def get_rating(self, title):
-    #     reviews = Review.objects.filter(title=title)
-    #     rating = reviews.all().aggregate(Avg("score"))
-    #     result = rating["score__avg"]
-    #     return result
 
 
 class ReviewSerializer(serializers.ModelSerializer):

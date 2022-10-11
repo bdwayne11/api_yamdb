@@ -56,15 +56,15 @@ def signup(request):
     serializer = SignupSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     password = User.objects.make_random_password()
-    
+
     try:
         user, _ = User.objects.get_or_create(
             username=serializer.data['username'],
             email=serializer.data['email'])
         user.set_password(password)
-    except:
+    except Exception:
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
-    
+
     send_mail(
         'Регистрация на сервисе api_yamdb',
         'Поздравляем с регистрацией!'
@@ -74,7 +74,7 @@ def signup(request):
         fail_silently=False,
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
