@@ -15,5 +15,5 @@ pip install -r requirements.txt
 
 python3 manage.py migrate
 Запустить проект:
-
+asdasd
 python3 manage.py runserver
